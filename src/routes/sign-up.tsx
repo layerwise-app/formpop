@@ -12,6 +12,7 @@ import {
 } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
+import { AuthShell } from '~/components/auth-shell';
 
 export const Route = createFileRoute('/sign-up')({
   component: SignUpPage
@@ -38,12 +39,12 @@ function SignUpPage() {
   });
 
   return (
-    <div className='flex min-h-svh items-center justify-center p-4'>
-      <Card className='w-full max-w-sm'>
+    <AuthShell>
+      <Card className='auth-card w-full max-w-sm'>
         <CardHeader>
-          <CardTitle>Create an account</CardTitle>
+          <CardTitle>Make room for good conversations.</CardTitle>
           <CardDescription>
-            Sign up with your email and password.
+            Your free Formpop workspace is just a few details away.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -124,6 +125,6 @@ function SignUpPage() {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </AuthShell>
   );
 }

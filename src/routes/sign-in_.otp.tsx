@@ -20,6 +20,7 @@ import {
   InputOTPGroup,
   InputOTPSlot
 } from '~/components/ui/input-otp';
+import { AuthShell } from '~/components/auth-shell';
 
 export const Route = createFileRoute('/sign-in_/otp')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -55,8 +56,8 @@ function EmailOtpPage() {
   });
 
   return (
-    <div className='flex min-h-svh items-center justify-center p-4'>
-      <Card className='w-full max-w-sm'>
+    <AuthShell>
+      <Card className='auth-card w-full max-w-sm'>
         <CardHeader>
           <CardTitle>Check your email</CardTitle>
           <CardDescription>
@@ -125,6 +126,6 @@ function EmailOtpPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </AuthShell>
   );
 }

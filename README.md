@@ -1,39 +1,86 @@
-# Layerwise project
+# Formpop
 
-<a href="https://layerwise.app"><img src="https://layerwise.app/powered-by.png" alt="Powered by Layerwise" width="320" /></a>
+A conversational form builder with original branding, built on the existing
+Layerwise stack. MIT licensed. No HeyForm source code, styles, assets, or text
+are included.
 
-This is the starter used for new Layerwise projects. It is a full-stack React
-app built with TanStack Start and deployed to Cloudflare Workers. The template
-includes Better Auth, a D1 database with Drizzle ORM, Tailwind CSS, shadcn/ui,
-and the Layerwise preview bridge.
+## V1 Features
 
-## Commands
+- Better Auth email/password and email OTP authentication.
+- Owner-scoped dashboard, six original templates, search, sort, grid/list views.
+- Create, duplicate, archive, restore, and permanently delete forms.
+- Pointer and keyboard drag-and-drop, seven field types, labels, descriptions,
+  required answers, and backward-only exact-match conditional visibility.
+- Custom colors, welcome screens, and thank-you screens.
+- Explicit Save Draft, ephemeral draft preview, and snapshot-based publishing.
+- Public URLs at `/f/:slug`, conversational navigation, keyboard shortcuts,
+  conditional question paths, progress, and server-validated submissions.
+- Response counts, snapshot-aware details, and formula-safe CSV export.
 
-```bash
-pnpm dev
-pnpm check-types
-pnpm build
-pnpm auth:generate
-pnpm db:generate --name <migration_name>
-pnpm db:migrate
-pnpm cf-typegen
-pnpm release
+Uploads, payments, teams, and external integrations are intentionally deferred.
+
+## Architecture
+
+The public landing page is `/`; the sample template workspace is `/demo`.
+Authenticated management pages live under `/dashboard`, with editing and
+responses at `/dashboard/forms/:formId`. Old `/forms/:formId` links redirect
+to the new editor route. Published respondent URLs remain `/f/:slug`.
+
+`src/lib/form-model.ts` contains shared validation and visibility logic.
+`src/lib/forms.functions.ts` validates request inputs and obtains the owner
+from the Better Auth session. `src/lib/form-store.ts` uses Drizzle against D1.
+Never accept an owner ID from a client.
+
+Drafts live in `forms`; immutable versions live in `publications`. Publishing
+atomically inserts a snapshot and switches the active pointer. Saving a draft
+does not update a publication. Submissions reference the publication they
+answered, so response labels remain correct across future form edits. Requests
+for stale public versions are rejected with a refresh message. Draft revisions
+prevent silent overwrites from another browser tab. Submission IDs prevent
+duplicate records on retries.
+
+Archiving closes the public link and preserves responses. Restoring a published
+form reopens its existing snapshot. Deletion cascades to publications and
+responses and requires an explicit confirmation in the dashboard.
+
+## Verification
+
+```sh
+pnpm run check-types
+pnpm run build
+pnpm test
+pnpm run test:db
 ```
 
-`db:migrate` applies generated Drizzle migrations to the local D1 database.
-Layerwise applies the same migrations to the project's production D1 database
-during publishing.
+Tests require Node 22.15+ (or Node 24+) for the test-only TypeScript loader. D1 integration
+tests create and remove an isolated temporary database and need a local binding
+port; they do not modify the application's local database.
 
-## Important files
+## Database and Deployment
 
-- `src/routes/`: TanStack Router file routes
-- `src/lib/auth.ts`: Better Auth server configuration
-- `src/lib/auth.functions.ts`: client-callable server functions
-- `src/db/schema.ts`: Drizzle schema
-- `vite.config.ts`: Cloudflare, TanStack Start, React, Tailwind, and Layerwise
-  plugins
-- `wrangler.jsonc`: local Worker and D1 bindings
+```sh
+pnpm run db:generate
+pnpm run db:migrate
+```
 
-Keep secrets server-side. Variables prefixed with `VITE_` are included in the
-browser bundle. `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and `AUTH_EMAIL_URL`
-belong in the Worker environment.
+Drizzle owns all migrations. Layerwise applies them to production D1 on publish
+and manages the development server and Cloudflare Workers deployment.
+
+Keep `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and `AUTH_EMAIL_URL` server-side.
+Layerwise injects email delivery automatically; outside Layerwise the existing
+`sendAuthEmail` helper logs development OTPs when no delivery URL is provided.
+Delivery failures are surfaced by the existing auth UI.
+
+## Interaction Reference
+
+HeyForm's public documentation was studied for its three-panel editing flow,
+question ordering, right-side settings, conversational navigation, and explicit
+publishing. Formpop implements these general patterns independently:
+
+- https://docs.heyform.net/quickstart/create-a-form
+- https://docs.heyform.net/features/conditional-logic
+- https://docs.heyform.net/features/form-settings
+- https://docs.heyform.net/features/share
+
+Formpop uses manual draft saving rather than HeyForm's autosave. The included
+dnd-kit dependencies are MIT licensed; no copyleft HeyForm code is used.

@@ -17,6 +17,7 @@ import {
   InputOTPGroup,
   InputOTPSlot
 } from '~/components/ui/input-otp';
+import { AuthShell } from '~/components/auth-shell';
 
 export const Route = createFileRoute('/forgot-password')({
   component: ForgotPasswordPage
@@ -51,8 +52,8 @@ function ForgotPasswordPage() {
 
   if (resetPassword.isSuccess) {
     return (
-      <div className='flex min-h-svh items-center justify-center p-4'>
-        <Card className='w-full max-w-sm'>
+      <AuthShell>
+        <Card className='auth-card w-full max-w-sm'>
           <CardHeader>
             <CardTitle>Password reset</CardTitle>
             <CardDescription>
@@ -65,13 +66,13 @@ function ForgotPasswordPage() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </AuthShell>
     );
   }
 
   return (
-    <div className='flex min-h-svh items-center justify-center p-4'>
-      <Card className='w-full max-w-sm'>
+    <AuthShell>
+      <Card className='auth-card w-full max-w-sm'>
         <CardHeader>
           <CardTitle>Reset your password</CardTitle>
           <CardDescription>
@@ -201,6 +202,6 @@ function ForgotPasswordPage() {
           </Button>
         </CardContent>
       </Card>
-    </div>
+    </AuthShell>
   );
 }

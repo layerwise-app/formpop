@@ -19,6 +19,7 @@ import {
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { Separator } from '~/components/ui/separator';
+import { AuthShell } from '~/components/auth-shell';
 
 export const Route = createFileRoute('/sign-in')({
   component: SignInPage
@@ -54,10 +55,10 @@ function SignInPage() {
   });
 
   return (
-    <div className='flex min-h-svh items-center justify-center p-4'>
-      <Card className='w-full max-w-sm'>
+    <AuthShell>
+      <Card className='auth-card w-full max-w-sm'>
         <CardHeader>
-          <CardTitle>Sign in</CardTitle>
+          <CardTitle>A familiar face. Welcome back.</CardTitle>
           <CardDescription>
             Enter your email and we’ll send you a one-time sign-in code.
           </CardDescription>
@@ -173,6 +174,6 @@ function SignInPage() {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </AuthShell>
   );
 }

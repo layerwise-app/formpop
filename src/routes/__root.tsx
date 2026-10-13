@@ -22,9 +22,9 @@ export const Route = createRootRouteWithContext<{
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      ...seo({ title: 'My App', description: 'Built with TanStack Start' })
+      ...seo({ title: 'Formpop · A little more human', description: 'Thoughtful forms. Better conversations.' })
     ],
-    links: [{ rel: 'icon', href: '/favicon.ico' }]
+    links: [{ rel: 'icon', href: '/formpop.svg', type: 'image/svg+xml' }]
   }),
   errorComponent: (props) => (
     <RootDocument>
@@ -52,8 +52,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <ThemeProvider
           attribute='class'
-          defaultTheme='system'
-          enableSystem
+          defaultTheme='light'
+          forcedTheme='light'
+          enableSystem={false}
           disableTransitionOnChange
         >
           <TooltipProvider>
