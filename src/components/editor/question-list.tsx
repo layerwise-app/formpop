@@ -177,13 +177,14 @@ export function QuestionList({
 
   return (
     <div className='flex h-full flex-col'>
-      <div className='flex items-center justify-between gap-2 px-3 pt-4 pb-2'>
+      <div className='flex items-center justify-between gap-2 px-3 pt-4 pb-1'>
         <h2 className='text-sm font-semibold'>
           Questions <span className='font-normal text-muted-foreground'>{document.fields.length}</span>
         </h2>
         <AddQuestionMenu onAdd={add} disabled={locked || document.fields.length >= 50} />
       </div>
-      <div className='flex-1 overflow-y-auto px-2 pb-4'>
+      {/* pt-1 and scroll-py-1 keep item focus rings inside the scroller. */}
+      <div className='flex-1 scroll-py-1 overflow-y-auto px-2 pt-1 pb-4'>
         <button
           type='button'
           onClick={() => onSelect('welcome')}

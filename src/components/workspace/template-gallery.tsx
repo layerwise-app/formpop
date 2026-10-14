@@ -101,9 +101,10 @@ function TemplatePreview({
 }
 
 // On phones, a snap-scrolling row that bleeds to the screen edge (assumes a
-// px-4 parent) instead of six stacked cards.
+// px-4 parent) instead of six stacked cards. The scroller clips vertically too,
+// so pt-1 (offset by -mt-1) leaves room for the focus ring and hover lift.
 const phoneRow =
-  'max-sm:-mx-4 max-sm:flex max-sm:snap-x max-sm:snap-mandatory max-sm:scroll-px-4 max-sm:overflow-x-auto max-sm:px-4 max-sm:pb-4 max-sm:*:w-[80%] max-sm:*:shrink-0 max-sm:*:snap-start';
+  'max-sm:-mx-4 max-sm:-mt-1 max-sm:flex max-sm:snap-x max-sm:snap-mandatory max-sm:scroll-px-4 max-sm:overflow-x-auto max-sm:px-4 max-sm:pt-1 max-sm:pb-4 max-sm:*:w-[80%] max-sm:*:shrink-0 max-sm:*:snap-start';
 
 // Template cards open a live preview; `onUse` decides what "Use template" does.
 export function TemplateGallery({

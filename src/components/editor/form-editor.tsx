@@ -191,7 +191,8 @@ export function FormEditor({ initial, tab }: { initial: SavedForm; tab: EditorTa
       <div className='flex h-dvh flex-col bg-background'>
         <EditorHeader editor={editor} onPreview={openPreview} onPublished={() => goTo('share')} />
         <nav aria-label='Editor sections' className='shrink-0 border-b bg-background'>
-          <div className='flex gap-1 overflow-x-auto px-2 [scrollbar-width:none] sm:px-4'>
+          {/* The scroller clips vertically too; py-1 (offset by -my-1) keeps focus rings and the underline whole. */}
+          <div className='-my-1 flex gap-1 overflow-x-auto px-2 py-1 [scrollbar-width:none] sm:px-4'>
             {(Object.keys(tabLabels) as EditorTab[]).map((id) => (
               <Link
                 key={id}

@@ -76,10 +76,15 @@ export function FormCard({ form }: { form: FormRow }) {
   }
 
   return (
-    <li className={cn('group relative flex flex-col overflow-hidden rounded-2xl border bg-card', cardLift)}>
+    // No overflow-hidden here: it would clip the title link's card-wide focus ring,
+    // so the thumbnail rounds its own top corners instead.
+    <li className={cn('group relative flex flex-col rounded-2xl border bg-card', cardLift)}>
       <FormThumbnail
         document={form.draft}
-        className={cn('border-b', form.status === 'archived' && 'opacity-60 grayscale')}
+        className={cn(
+          'rounded-t-[calc(var(--radius-2xl)-1px)] border-b',
+          form.status === 'archived' && 'opacity-60 grayscale'
+        )}
       />
       <div className='flex items-start gap-2 p-4 pr-2'>
         <div className='min-w-0 flex-1'>
@@ -87,7 +92,7 @@ export function FormCard({ form }: { form: FormRow }) {
           <Link
             {...link}
             search={{ tab: 'build' }}
-            className='block truncate font-medium outline-none after:absolute after:inset-0 after:rounded-2xl focus-visible:after:ring-3 focus-visible:after:ring-ring/50'
+            className='block truncate font-medium outline-none after:absolute after:-inset-px after:rounded-2xl focus-visible:after:ring-3 focus-visible:after:ring-ring/50'
           >
             {title}
           </Link>
