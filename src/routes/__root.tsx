@@ -22,9 +22,21 @@ export const Route = createRootRouteWithContext<{
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      ...seo({ title: 'Formpop · A little more human', description: 'Thoughtful forms. Better conversations.' })
+      { name: 'theme-color', content: '#E11D74' },
+      ...seo({
+        title: 'Formpop',
+        description:
+          'Conversational forms that ask one question at a time, with logic, themes and analytics.'
+      })
     ],
-    links: [{ rel: 'icon', href: '/formpop.svg', type: 'image/svg+xml' }]
+    links: [
+      { rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
+      { rel: 'icon', href: '/formpop.svg', type: 'image/svg+xml' },
+      { rel: 'icon', href: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
+      { rel: 'icon', href: '/favicon-16x16.png', type: 'image/png', sizes: '16x16' },
+      { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
+      { rel: 'manifest', href: '/site.webmanifest' }
+    ]
   }),
   errorComponent: (props) => (
     <RootDocument>

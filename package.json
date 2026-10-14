@@ -6,7 +6,7 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "test": "node --import ./scripts/register-typescript.mjs --test tests/form-model.test.mjs",
+    "test": "node --import ./scripts/register-typescript.mjs --test tests/form-model.test.mjs tests/form-analytics.test.mjs tests/form-keys.test.mjs tests/form-edits.test.mjs tests/form-share.test.mjs",
     "test:db": "node --import ./scripts/register-typescript.mjs --test tests/form-store.test.mjs",
     "dev": "vite dev",
     "check-types": "tsc --noEmit",

@@ -1,15 +1,19 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { FormpopWorkspace } from '~/components/formpop-workspace';
+import { FormsWorkspace } from '~/components/workspace/forms-workspace';
+import { templateInfo, type TemplateId } from '~/lib/form-templates';
 import { seo } from '~/utils/seo';
 
 export const Route = createFileRoute('/dashboard/')({
-  head: () => ({
-    meta: seo({ title: 'Your workspace · Formpop', description: 'Your private home for forms and responses.' }),
+  // `?template=` opens the create dialog, e.g. from the landing gallery.
+  validateSearch: (search: Record<string, unknown>): { template?: TemplateId } => ({
+    template: templateInfo.find((t) => t.id === search.template)?.id
   }),
-  component: Dashboard,
+  head: () => ({ meta: seo({ title: 'Forms · Formpop' }) }),
+  component: Dashboard
 });
 
 function Dashboard() {
   const { user } = Route.useRouteContext();
-  return <FormpopWorkspace user={user} />;
+  const { template } = Route.useSearch();
+  return <FormsWorkspace user={user} template={template} />;
 }

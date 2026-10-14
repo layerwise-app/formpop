@@ -4,27 +4,33 @@ A conversational form builder with original branding, built on the existing
 Layerwise stack. MIT licensed. No HeyForm source code, styles, assets, or text
 are included.
 
-## V1 Features
+## Features
 
 - Better Auth email/password and email OTP authentication.
-- Owner-scoped dashboard, six original templates, search, sort, grid/list views.
+- Owner-scoped dashboard with totals, status filters, search (`/`), sort, and
+  six themed templates.
 - Create, duplicate, archive, restore, and permanently delete forms.
-- Pointer and keyboard drag-and-drop, seven field types, labels, descriptions,
-  required answers, and backward-only exact-match conditional visibility.
-- Custom colors, welcome screens, and thank-you screens.
-- Explicit Save Draft, ephemeral draft preview, and snapshot-based publishing.
-- Public URLs at `/f/:slug`, conversational navigation, keyboard shortcuts,
-  conditional question paths, progress, and server-validated submissions.
-- Response counts, snapshot-aware details, and formula-safe CSV export.
+- Ten field types, pointer and keyboard drag-and-drop, required answers, and
+  backward-only conditional visibility.
+- Six theme presets plus custom colors, welcome screens, and thank-you screens.
+- Explicit save (`Cmd/Ctrl+S`), draft preview, and snapshot-based publishing.
+- Public URLs at `/f/:slug` with keyboard answering (letters, digits, Y/N,
+  Enter), progress, and server-validated submissions.
+- Share tab: copy link, embed snippet, link-preview description, and an
+  accepting-responses toggle that shows visitors a closed page.
+- Responses table, response detail, and formula-safe CSV export.
+- Analytics: views → started → completed funnel, daily chart (7/30/90 days),
+  and per-question summaries (averages, NPS, choice shares, recent text).
 
 Uploads, payments, teams, and external integrations are intentionally deferred.
 
 ## Architecture
 
 The public landing page is `/`; the sample template workspace is `/demo`.
-Authenticated management pages live under `/dashboard`, with editing and
-responses at `/dashboard/forms/:formId`. Old `/forms/:formId` links redirect
-to the new editor route. Published respondent URLs remain `/f/:slug`.
+Authenticated management pages live under `/dashboard`; the editor is
+`/dashboard/forms/:formId?tab=build|design|share|responses|analytics`. Old
+`/forms/:formId` links redirect there. Published respondent URLs remain
+`/f/:slug`.
 
 `src/lib/form-model.ts` contains shared validation and visibility logic.
 `src/lib/forms.functions.ts` validates request inputs and obtains the owner
@@ -39,6 +45,10 @@ for stale public versions are rejected with a refresh message. Draft revisions
 prevent silent overwrites from another browser tab. Submission IDs prevent
 duplicate records on retries.
 
+Analytics counts each browser session once in `form_visits` (view, then
+start on the first answer); no personal data is stored. Completions come from
+`submissions`.
+
 Archiving closes the public link and preserves responses. Restoring a published
 form reopens its existing snapshot. Deletion cascades to publications and
 responses and requires an explicit confirmation in the dashboard.
@@ -52,7 +62,8 @@ pnpm test
 pnpm run test:db
 ```
 
-Tests require Node 22.15+ (or Node 24+) for the test-only TypeScript loader. D1 integration
+`pnpm test` covers the form model, analytics, keyboard answers, editor edits,
+and share helpers. Tests require Node 22.15+ (or Node 24+) for the test-only TypeScript loader. D1 integration
 tests create and remove an isolated temporary database and need a local binding
 port; they do not modify the application's local database.
 
@@ -63,7 +74,8 @@ pnpm run db:generate
 pnpm run db:migrate
 ```
 
-Drizzle owns all migrations. Layerwise applies them to production D1 on publish
+Drizzle owns all migrations. `20261013142239_form_analytics` adds the
+`form_visits` table and the `forms.accepting` flag. Layerwise applies them to production D1 on publish
 and manages the development server and Cloudflare Workers deployment.
 
 Keep `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and `AUTH_EMAIL_URL` server-side.

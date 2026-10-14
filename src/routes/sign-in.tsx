@@ -1,35 +1,30 @@
 import { useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useMutation } from '@tanstack/react-query';
-import { ChevronDownIcon } from 'lucide-react';
-import { authClient } from '~/lib/auth-client';
+import { ChevronDown } from 'lucide-react';
+import { AuthShell, FormMessage, textLink } from '~/components/auth-shell';
 import { Button } from '~/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '~/components/ui/card';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger
 } from '~/components/ui/collapsible';
+import { Field, FieldGroup, FieldLabel, FieldSeparator } from '~/components/ui/field';
 import { Input } from '~/components/ui/input';
-import { Label } from '~/components/ui/label';
-import { Separator } from '~/components/ui/separator';
-import { AuthShell } from '~/components/auth-shell';
+import { Spinner } from '~/components/ui/spinner';
+import { authClient } from '~/lib/auth-client';
+import { seo } from '~/utils/seo';
 
 export const Route = createFileRoute('/sign-in')({
+  head: () => ({ meta: seo({ title: 'Sign in · Formpop' }) }),
   component: SignInPage
 });
 
 function SignInPage() {
   const navigate = useNavigate();
+  const [otpEmail, setOtpEmail] = useState('');
   const [passwordEmail, setPasswordEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [otpEmail, setOtpEmail] = useState('');
 
   const sendOtp = useMutation({
     mutationFn: async () => {
@@ -37,143 +32,122 @@ function SignInPage() {
         email: otpEmail,
         type: 'sign-in'
       });
-      if (error) throw new Error(error.message ?? 'Failed to send code');
+      if (error) throw new Error(error.message ?? 'Could not send a code.');
     },
-    onSuccess: () =>
-      navigate({ to: '/sign-in/otp', search: { email: otpEmail } })
+    onSuccess: () => navigate({ to: '/sign-in/otp', search: { email: otpEmail } })
   });
 
   const signInWithPassword = useMutation({
     mutationFn: async () => {
-      const { error } = await authClient.signIn.email({
-        email: passwordEmail,
-        password
-      });
-      if (error) throw new Error(error.message ?? 'Failed to sign in');
+      const { error } = await authClient.signIn.email({ email: passwordEmail, password });
+      if (error) throw new Error(error.message ?? 'Could not sign in.');
     },
     onSuccess: () => navigate({ to: '/dashboard' })
   });
 
   return (
-    <AuthShell>
-      <Card className='auth-card w-full max-w-sm'>
-        <CardHeader>
-          <CardTitle>A familiar face. Welcome back.</CardTitle>
-          <CardDescription>
-            Enter your email and we’ll send you a one-time sign-in code.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className='flex flex-col gap-6'>
+    <AuthShell
+      title='Sign in'
+      description='We’ll email you a sign-in code.'
+      footer={
+        <>
+          New to Formpop?{' '}
+          <Link to='/sign-up' className={textLink}>
+            Create an account
+          </Link>
+        </>
+      }
+    >
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          sendOtp.mutate();
+        }}
+      >
+        <FieldGroup className='gap-4'>
+          <Field>
+            <FieldLabel htmlFor='otp-email'>Email</FieldLabel>
+            <Input
+              id='otp-email'
+              type='email'
+              autoComplete='email'
+              autoFocus
+              required
+              value={otpEmail}
+              onChange={(event) => {
+                setOtpEmail(event.target.value);
+                sendOtp.reset();
+              }}
+            />
+          </Field>
+          <FormMessage error={sendOtp.error} />
+          <Button type='submit' size='lg' disabled={sendOtp.isPending}>
+            {sendOtp.isPending ? <Spinner /> : null}
+            Email me a code
+          </Button>
+        </FieldGroup>
+      </form>
+      <FieldSeparator className='my-4 *:data-[slot=field-separator-content]:bg-card'>or</FieldSeparator>
+      <Collapsible>
+        <CollapsibleTrigger asChild>
+          <Button variant='ghost' className='group w-full'>
+            Use a password
+            <ChevronDown className='transition-transform group-data-[state=open]:rotate-180' />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className='pt-4'>
           <form
-            className='flex flex-col gap-4'
             onSubmit={(event) => {
               event.preventDefault();
-              sendOtp.mutate();
+              signInWithPassword.mutate();
             }}
           >
-            <div className='flex flex-col gap-2'>
-              <div className='flex items-center justify-between gap-4'>
-                <Label htmlFor='otp-email'>Email</Label>
-              </div>
-              <Input
-                id='otp-email'
-                type='email'
-                autoComplete='email'
-                autoFocus
-                required
-                value={otpEmail}
-                onChange={(event) => {
-                  setOtpEmail(event.target.value);
-                  sendOtp.reset();
-                }}
-              />
-            </div>
-            {sendOtp.error ? (
-              <p className='text-sm text-destructive'>
-                {sendOtp.error.message}
-              </p>
-            ) : null}
-            <Button type='submit' disabled={sendOtp.isPending}>
-              {sendOtp.isPending ? 'Sending code…' : 'Continue with email'}
-            </Button>
-          </form>
-          <div className='flex items-center gap-3'>
-            <Separator className='flex-1' />
-            <span className='text-xs text-muted-foreground'>OR</span>
-            <Separator className='flex-1' />
-          </div>
-          <Collapsible>
-            <CollapsibleTrigger asChild>
-              <Button variant='ghost' className='group w-full'>
-                Sign in with password
-                <ChevronDownIcon className='size-4 transition-transform group-data-[state=open]:rotate-180' />
+            <FieldGroup className='gap-4'>
+              <Field>
+                <FieldLabel htmlFor='password-email'>Email</FieldLabel>
+                <Input
+                  id='password-email'
+                  type='email'
+                  autoComplete='email'
+                  required
+                  value={passwordEmail}
+                  onChange={(event) => {
+                    setPasswordEmail(event.target.value);
+                    signInWithPassword.reset();
+                  }}
+                />
+              </Field>
+              <Field>
+                <div className='flex items-center justify-between gap-4'>
+                  <FieldLabel htmlFor='password'>Password</FieldLabel>
+                  <Link
+                    to='/forgot-password'
+                    className='rounded-sm text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline'
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <Input
+                  id='password'
+                  type='password'
+                  autoComplete='current-password'
+                  required
+                  value={password}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    signInWithPassword.reset();
+                  }}
+                />
+              </Field>
+              <FormMessage error={signInWithPassword.error} />
+              <Button type='submit' variant='outline' size='lg' disabled={signInWithPassword.isPending}>
+                {signInWithPassword.isPending ? <Spinner /> : null}
+                Sign in
               </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className='pt-4'>
-              <form
-                className='flex flex-col gap-4'
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  signInWithPassword.mutate();
-                }}
-              >
-                <div className='flex flex-col gap-2'>
-                  <Label htmlFor='password-email'>Email</Label>
-                  <Input
-                    id='password-email'
-                    type='email'
-                    autoComplete='email'
-                    required
-                    value={passwordEmail}
-                    onChange={(event) => {
-                      setPasswordEmail(event.target.value);
-                      signInWithPassword.reset();
-                    }}
-                  />
-                </div>
-                <div className='flex flex-col gap-2'>
-                  <div className='flex items-center justify-between gap-4'>
-                    <Label htmlFor='password'>Password</Label>
-                    <Link
-                      to='/forgot-password'
-                      className='text-sm text-muted-foreground underline'
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
-                  <Input
-                    id='password'
-                    type='password'
-                    autoComplete='current-password'
-                    required
-                    value={password}
-                    onChange={(event) => {
-                      setPassword(event.target.value);
-                      signInWithPassword.reset();
-                    }}
-                  />
-                </div>
-                {signInWithPassword.error ? (
-                  <p className='text-sm text-destructive'>
-                    {signInWithPassword.error.message}
-                  </p>
-                ) : null}
-                <Button type='submit' disabled={signInWithPassword.isPending}>
-                  {signInWithPassword.isPending
-                    ? 'Signing in…'
-                    : 'Sign in with password'}
-                </Button>
-              </form>
-            </CollapsibleContent>
-          </Collapsible>
-          <p className='text-center text-sm text-muted-foreground'>
-            Don’t have an account?{' '}
-            <Link to='/sign-up' className='underline'>
-              Sign up
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
+            </FieldGroup>
+          </form>
+        </CollapsibleContent>
+      </Collapsible>
     </AuthShell>
   );
 }

@@ -1,26 +1,13 @@
 import { useState } from 'react';
-import {
-  createFileRoute,
-  Link,
-  redirect,
-  useNavigate
-} from '@tanstack/react-router';
+import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router';
 import { useMutation } from '@tanstack/react-query';
-import { authClient } from '~/lib/auth-client';
+import { AuthShell, FormMessage, textLink } from '~/components/auth-shell';
 import { Button } from '~/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '~/components/ui/card';
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot
-} from '~/components/ui/input-otp';
-import { AuthShell } from '~/components/auth-shell';
+import { FieldGroup } from '~/components/ui/field';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '~/components/ui/input-otp';
+import { Spinner } from '~/components/ui/spinner';
+import { authClient } from '~/lib/auth-client';
+import { seo } from '~/utils/seo';
 
 export const Route = createFileRoute('/sign-in_/otp')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -29,6 +16,7 @@ export const Route = createFileRoute('/sign-in_/otp')({
   beforeLoad: ({ search }) => {
     if (!search.email) throw redirect({ to: '/sign-in' });
   },
+  head: () => ({ meta: seo({ title: 'Check your email · Formpop' }) }),
   component: EmailOtpPage
 });
 
@@ -40,7 +28,7 @@ function EmailOtpPage() {
   const verifyOtp = useMutation({
     mutationFn: async () => {
       const { error } = await authClient.signIn.emailOtp({ email, otp });
-      if (error) throw new Error(error.message ?? 'Invalid code');
+      if (error) throw new Error(error.message ?? 'That code didn’t work.');
     },
     onSuccess: () => navigate({ to: '/dashboard' })
   });
@@ -51,81 +39,65 @@ function EmailOtpPage() {
         email,
         type: 'sign-in'
       });
-      if (error) throw new Error(error.message ?? 'Failed to resend code');
+      if (error) throw new Error(error.message ?? 'Could not resend the code.');
     }
   });
 
   return (
-    <AuthShell>
-      <Card className='auth-card w-full max-w-sm'>
-        <CardHeader>
-          <CardTitle>Check your email</CardTitle>
-          <CardDescription>
-            Enter the six-digit code we sent to {email}.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className='flex flex-col gap-6'>
-          <form
-            className='flex flex-col gap-4'
-            onSubmit={(event) => {
-              event.preventDefault();
-              verifyOtp.mutate();
+    <AuthShell
+      title='Check your email'
+      description={
+        <>
+          Enter the 6-digit code sent to <span className='text-foreground'>{email}</span>.
+        </>
+      }
+      footer={
+        <Link to='/sign-in' className={textLink}>
+          Use a different email
+        </Link>
+      }
+    >
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          verifyOtp.mutate();
+        }}
+      >
+        <FieldGroup className='gap-4'>
+          <InputOTP
+            autoFocus
+            autoComplete='one-time-code'
+            aria-label='Sign-in code'
+            containerClassName='w-full'
+            maxLength={6}
+            value={otp}
+            onChange={(value) => {
+              setOtp(value);
+              verifyOtp.reset();
             }}
           >
-            <InputOTP
-              autoFocus
-              autoComplete='one-time-code'
-              containerClassName='w-full'
-              maxLength={6}
-              value={otp}
-              onChange={(value) => {
-                setOtp(value);
-                verifyOtp.reset();
-              }}
-            >
-              <InputOTPGroup className='w-full'>
-                {Array.from({ length: 6 }, (_, index) => (
-                  <InputOTPSlot key={index} index={index} className='flex-1' />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
-            {verifyOtp.error ? (
-              <p className='text-sm text-destructive'>
-                {verifyOtp.error.message}
-              </p>
-            ) : null}
-            <Button
-              type='submit'
-              disabled={otp.length < 6 || verifyOtp.isPending}
-            >
-              {verifyOtp.isPending ? 'Verifying…' : 'Verify and sign in'}
-            </Button>
-          </form>
-          <div className='flex flex-col items-center gap-2 text-sm'>
-            <Button
-              type='button'
-              variant='link'
-              className='h-auto p-0'
-              disabled={resendOtp.isPending}
-              onClick={() => resendOtp.mutate()}
-            >
-              {resendOtp.isPending
-                ? 'Sending…'
-                : resendOtp.isSuccess
-                  ? 'Code sent'
-                  : 'Resend code'}
-            </Button>
-            {resendOtp.error ? (
-              <p className='text-center text-sm text-destructive'>
-                {resendOtp.error.message}
-              </p>
-            ) : null}
-            <Link to='/sign-in' className='text-muted-foreground underline'>
-              Use a different email
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+            <InputOTPGroup className='w-full'>
+              {Array.from({ length: 6 }, (_, index) => (
+                <InputOTPSlot key={index} index={index} className='h-12 flex-1 text-lg' />
+              ))}
+            </InputOTPGroup>
+          </InputOTP>
+          <FormMessage error={verifyOtp.error ?? resendOtp.error} />
+          <Button type='submit' size='lg' disabled={otp.length < 6 || verifyOtp.isPending}>
+            {verifyOtp.isPending ? <Spinner /> : null}
+            Sign in
+          </Button>
+          <Button
+            type='button'
+            variant='ghost'
+            disabled={resendOtp.isPending}
+            onClick={() => resendOtp.mutate()}
+          >
+            {resendOtp.isPending ? <Spinner /> : null}
+            {resendOtp.isSuccess ? 'Code sent again' : 'Resend code'}
+          </Button>
+        </FieldGroup>
+      </form>
     </AuthShell>
   );
 }
